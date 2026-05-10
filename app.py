@@ -99,12 +99,12 @@ HTML = """
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
         body { font-family: -apple-system, sans-serif; background: #0f172a; color: #e2e8f0; margin: 0; padding: 20px; }
-      .header { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
-      .avatar { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 2px solid #0ea5e9; }
-      .chat { max-width: 600px; margin: 0 auto; }
-      .msg { background: #1e293b; padding: 12px 16px; border-radius: 12px; margin: 10px 0; line-height: 1.4; }
-      .user { background: #0ea5e9; text-align: right; margin-left: 40px; }
-      .viernes { margin-right: 40px; }
+     .header { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
+     .avatar { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 2px solid #0ea5e9; }
+     .chat { max-width: 600px; margin: 0 auto; }
+     .msg { background: #1e293b; padding: 12px 16px; border-radius: 12px; margin: 10px 0; line-height: 1.4; }
+     .user { background: #0ea5e9; text-align: right; margin-left: 40px; }
+     .viernes { margin-right: 40px; }
         input, button { padding: 12px; border-radius: 10px; border: none; margin: 5px 0; font-size: 16px; }
         input[type=text] { width: calc(100% - 100px); background: #1e293b; color: white; }
         button { background: #0ea5e9; color: white; cursor: pointer; width: 80px; font-weight: bold; }
@@ -122,6 +122,7 @@ HTML = """
                 <h2>VIERNES 📋</h2>
                 <div id="estado">lista</div>
             </div>
+        </div>
         <div id="mensajes"></div>
         <form id="form" enctype="multipart/form-data">
             <input type="text" id="texto" placeholder="Dime jefe..." autocomplete="off">
@@ -144,4 +145,50 @@ HTML = """
             if(texto) mensajes.innerHTML += `<div class="msg user">${texto}</div>`;
             if(imagen) mensajes.innerHTML += `<div class="msg user">📷 Imagen enviada</div>`;
 
-            document.getElement
+            document.getElementById('texto').value = '';
+            document.getElementById('imagen').value = '';
+            mensajes.scrollTop = mensajes.scrollHeight;
+
+            const formData = new FormData();
+            formData.append('texto', texto);
+            if (imagen) formData.append('imagen', imagen);
+
+            try {
+                const res = await fetch('/chat', { method: 'POST', body: formData });
+                const data = await res.json();
+                mensajes.innerHTML += `<div class="msg viernes">${data.respuesta}</div>`;
+                estado.textContent = data.estado_texto || 'lista';
+                mensajes.scrollTop = mensajes.scrollHeight;
+            } catch (err) {
+                mensajes.innerHTML += `<div class="msg viernes">Se cayó la conexión jefe [alerta]</div>`;
+            }
+        };
+    </script>
+</body>
+</html>
+"""
+
+@app.route('/')
+def home():
+    return render_template_string(HTML)
+
+@app.route('/imagen/<path:filename>')
+def imagen(filename):
+    return send_from_directory('.', filename)
+
+@app.route('/chat', methods=['POST'])
+def chat():
+    texto = request.form.get('texto', '')
+    imagen_file = request.files.get('imagen')
+    imagen_base64 = None
+
+    if imagen_file and imagen_file.filename:
+        imagen_base64 = base64.b64encode(imagen_file.read()).decode('utf-8')
+
+    respuesta = analizar_con_groq_vision(texto, imagen_base64)
+    estado, estado_texto = detectar_estado(respuesta)
+
+    return {"respuesta": respuesta, "estado": estado, "estado_texto": estado_texto}
+
+if __name__ == '__main__':
+    app.run(debug=True)
