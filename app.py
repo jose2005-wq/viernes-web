@@ -41,7 +41,7 @@ HTML = '''<!DOCTYPE html>
 <body>
     <div class="chat">
         <div class="header">
-            <img src="/imagen/viernes.jpg" class="avatar" alt="VIERNES">
+            <img src="/imagen/FB_IMG_1778452233908.jpg" class="avatar" alt="VIERNES">
             <div class="estado {{estado_clase}}">VIERNES 📋 {{estado_texto}}</div>
         </div>
         <div class="historial">
