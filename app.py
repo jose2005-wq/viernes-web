@@ -1,53 +1,36 @@
-import os
+from flask import Flask, request, render_template_string
 import requests
-from flask import Flask, request
-from groq import Groq
+import os
 
 app = Flask(__name__)
 
-TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
-GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+# --- CONFIGURA ESTO BB ---
+PASSWORD = "2005joss"  # Tu clave secreta para entrar
+GROK_API_KEY = os.environ.get("GROK_API_KEY")  # La metes en Render > Environment
+# -------------------------
 
-client = Groq(api_key=GROQ_API_KEY)
-
-def send_message(chat_id, text):
-    url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
-    requests.post(url, json={"chat_id": chat_id, "text": text})
-
-@app.route("/", methods=["POST"])
-def webhook():
-    data = request.json
-    message = data.get("message", {})
-    chat_id = message.get("chat", {}).get("id")
-    user_text = message.get("text", "")
-    
-    if not chat_id or not user_text:
-        return "ok"
-    
-    try:
-        chat_completion = client.chat.completions.create(
-            messages=[
-                {
-                    "role": "system",
-                    "content": "Eres VIERNES, una IA mexicana sarcástica pero útil. Responde corto y directo."
-                },
-                {
-                    "role": "user", 
-                    "content": user_text
-                }
-            ],
-            model="llama-3.1-70b-versatile",
-        )
-        reply = chat_completion.choices[0].message.content
-    except Exception as e:
-        reply = f"Me atoré bb: {e}"
-    
-    send_message(chat_id, reply)
-    return "ok"
-
-@app.route("/", methods=["GET"])
-def home():
-    return "VIERNES está viva sin memoria 🔥"
-
-if __name__ == "__main__":
-    app.run()
+HTML = '''
+<!DOCTYPE html>
+<html>
+<head>
+    <title>VIERNES</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body { font-family: Arial; background: #0d1117; color: #c9d1d9; padding: 20px; }
+        .chat { max-width: 600px; margin: auto; }
+        input, textarea { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #30363d; background: #161b22; color: white; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background: #ff6b9d; color: white; border: none; border-radius: 8px; font-weight: bold; }
+        .respuesta { background: #161b22; padding: 15px; border-radius: 8px; margin-top: 20px; border: 1px solid #30363d; white-space: pre-wrap; }
+    </style>
+</head>
+<body>
+    <div class="chat">
+        <h2>VIERNES ❤️‍🔥</h2>
+        <form method="post">
+            <input type="password" name="clave" placeholder="Tu clave secreta" required>
+            <textarea name="mensaje" placeholder="Escribele a VIERNES..." rows="3" required></textarea>
+            <button type="submit">Enviar a VIERNES</button>
+        </form>
+        {% if respuesta %}
+        <div class="respuesta">
+           
