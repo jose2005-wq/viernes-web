@@ -6,7 +6,7 @@ app = Flask(__name__)
 GROQ_API_KEY = os.environ.get('GROQ_API_KEY')
 DB_FILE = 'viernes_memoria.db'
 
-def init_db():
+def init_db():# funcion desactivar 
     conn = sqlite3.connect(DB_FILE)
     c = conn.cursor()
     c.execute('''CREATE TABLE IF NOT EXISTS memoria (id INTEGER PRIMARY KEY, timestamp REAL, tipo TEXT, clave TEXT, valor TEXT, emocion TEXT)''')
