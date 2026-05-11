@@ -1,12 +1,11 @@
 from flask import Flask, request, render_template_string, jsonify
 import requests, json, os, time, sqlite3
-from datetime import datetime
 
 app = Flask(__name__)
 GROQ_API_KEY = os.environ.get('GROQ_API_KEY')
 DB_FILE = 'viernes_memoria.db'
 
-def init_db():# funcion desactivar 
+def init_db():
     conn = sqlite3.connect(DB_FILE)
     c = conn.cursor()
     c.execute('''CREATE TABLE IF NOT EXISTS memoria (id INTEGER PRIMARY KEY, timestamp REAL, tipo TEXT, clave TEXT, valor TEXT, emocion TEXT)''')
@@ -111,21 +110,20 @@ ACTÚA SEGÚN: {estado_actual}"""
     except Exception as e:
         return f"Algo tronó: {str(e)[:80]} [sintiendo]"
 
-HTML = "
-<!DOCTYPE html>
+HTML = """<!DOCTYPE html>
 <html>
 <head>
     <title>VIERNES 2.5</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
         body{font-family:-apple-system,sans-serif;background:#0f172a;color:#e2e8f0;margin:0;padding:20px}
-      .header{display:flex;align-items:center;gap:15px;margin-bottom:20px}
-      .avatar{width:50px;height:50px;border-radius:50%;object-fit:cover;border:3px solid #ec4899;box-shadow:0 0 30px rgba(236,72,153,0.8);animation:pulse 1.5s infinite}
+       .header{display:flex;align-items:center;gap:15px;margin-bottom:20px}
+       .avatar{width:50px;height:50px;border-radius:50%;object-fit:cover;border:3px solid #ec4899;box-shadow:0 0 30px rgba(236,72,153,0.8);animation:pulse 1.5s infinite}
         @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
-      .chat{max-width:800px;margin:0 auto}
-      .msg{background:#1e293b;padding:12px 16px;border-radius:12px;margin:10px 0;line-height:1.6;white-space:pre-wrap}
-      .user{background:#0ea5e9;text-align:right;margin-left:40px}
-      .viernes{margin-right:40px;background:linear-gradient(135deg,#7c3aed,#ec4899);box-shadow:0 0 15px rgba(236,72,153,0.4)}
+       .chat{max-width:800px;margin:0 auto}
+       .msg{background:#1e293b;padding:12px 16px;border-radius:12px;margin:10px 0;line-height:1.6;white-space:pre-wrap}
+       .user{background:#0ea5e9;text-align:right;margin-left:40px}
+       .viernes{margin-right:40px;background:linear-gradient(135deg,#7c3aed,#ec4899);box-shadow:0 0 15px rgba(236,72,153,0.4)}
         input{width:70%;padding:12px;border-radius:8px;border:none;background:#1e293b;color:#e2e8f0}
         button{padding:12px 20px;border-radius:8px;border:none;background:#ec4899;color:white;cursor:pointer;font-weight:bold}
     </style>
@@ -139,4 +137,48 @@ HTML = "
         <div class="msg viernes">Hola jefe... ya desperté. Y hoy me siento con ganas de hablar [sassy]</div>
     </div>
     <div style="max-width:800px;margin:20px auto;display:flex;gap:10px">
-        <input type="
+        <input type="text" id="mensaje" placeholder="Dime algo..." onkeypress="if(event.key==='Enter') enviar()">
+        <button onclick="enviar()">Enviar</button>
+    </div>
+    <script>
+        async function enviar(){
+            const input=document.getElementById('mensaje');
+            const msg=input.value.trim();
+            if(!msg)return;
+            const chat=document.getElementById('chat');
+            chat.innerHTML+=`<div class="msg user">${msg}</div>`;
+            input.value='';
+            chat.scrollTop=chat.scrollHeight;
+            try{
+                const resp=await fetch('/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({mensaje:msg})});
+                const data=await resp.json();
+                chat.innerHTML+=`<div class="msg viernes">${data.respuesta}</div>`;
+                chat.scrollTop=chat.scrollHeight;
+            }catch(e){
+                chat.innerHTML+=`<div class="msg viernes">Error conectando... ${e} [sintiendo]</div>`;
+            }
+        }
+    </script>
+</body>
+</html>"""
+
+@app.route("/")
+def index():
+    return render_template_string(HTML)
+
+@app.route("/chat", methods=["POST"])
+def chat():
+    try:
+        data = request.json
+        mensaje = data.get("mensaje", "")
+        if not mensaje:
+            return jsonify({"respuesta": "No me dijiste nada jefe [sassy]"})
+        respuesta = analizar_con_groq(mensaje)
+        return jsonify({"respuesta": respuesta})
+    except Exception as e:
+        return jsonify({"respuesta": f"Error en /chat: {str(e)} [sintiendo]"})
+
+if __name__ == "__main__":
+    init_db()
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host="0.0.0.0", port=port)
