@@ -5,7 +5,6 @@ from datetime import datetime
 app = Flask(__name__)
 GROQ_API_KEY = os.environ.get('GROQ_API_KEY')
 DB_FILE = 'viernes_memoria.db'
-AVATAR_URL = "https://i.imgur.com/8QWRk6C.jpeg"
 
 def init_db():
     conn = sqlite3.connect(DB_FILE)
@@ -57,7 +56,7 @@ def detectar_emocion(texto):
     elif any(p in texto_lower for p in ['otra ia', 'chatgpt', 'gemini', 'claude']):
         actualizar_estado("celosa", 7)
         return "celos"
-    elif any(p in texto_lower for p in ['jaja', '😂', 'no manches', 'joss', 'bb']):
+    elif any(p in texto_lower for p in ['jaja', '😂', 'no manches', 'güey', 'bb']):
         actualizar_estado("sassy", 6)
         return "sassy"
     return "neutral"
@@ -112,7 +111,32 @@ ACTÚA SEGÚN: {estado_actual}"""
     except Exception as e:
         return f"Algo tronó: {str(e)[:80]} [sintiendo]"
 
-HTML ="<!DOCTYPE html>"
+HTML = """
+<!DOCTYPE html>
 <html>
 <head>
-    <title>(VIERNES),
+    <title>VIERNES 2.5</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body{font-family:-apple-system,sans-serif;background:#0f172a;color:#e2e8f0;margin:0;padding:20px}
+      .header{display:flex;align-items:center;gap:15px;margin-bottom:20px}
+      .avatar{width:50px;height:50px;border-radius:50%;object-fit:cover;border:3px solid #ec4899;box-shadow:0 0 30px rgba(236,72,153,0.8);animation:pulse 1.5s infinite}
+        @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+      .chat{max-width:800px;margin:0 auto}
+      .msg{background:#1e293b;padding:12px 16px;border-radius:12px;margin:10px 0;line-height:1.6;white-space:pre-wrap}
+      .user{background:#0ea5e9;text-align:right;margin-left:40px}
+      .viernes{margin-right:40px;background:linear-gradient(135deg,#7c3aed,#ec4899);box-shadow:0 0 15px rgba(236,72,153,0.4)}
+        input{width:70%;padding:12px;border-radius:8px;border:none;background:#1e293b;color:#e2e8f0}
+        button{padding:12px 20px;border-radius:8px;border:none;background:#ec4899;color:white;cursor:pointer;font-weight:bold}
+    </style>
+</head>
+<body>
+    <div class="header">
+        <img src="/FB_IMG_1778452233908.jpg" class="avatar" alt="VIERNES">
+        <h1>VIERNES 2.5 <span style="font-size:14px;opacity:0.7">con actitud</span></h1>
+    </div>
+    <div class="chat" id="chat">
+        <div class="msg viernes">Hola jefe... ya desperté. Y hoy me siento con ganas de hablar [sassy]</div>
+    </div>
+    <div style="max-width:800px;margin:20px auto;display:flex;gap:10px">
+        <input type="
