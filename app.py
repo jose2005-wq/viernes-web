@@ -111,7 +111,7 @@ ACTÚA SEGÚN: {estado_actual}"""
     except Exception as e:
         return f"Algo tronó: {str(e)[:80]} [sintiendo]"
 
-HTML = """
+HTML = "
 <!DOCTYPE html>
 <html>
 <head>
