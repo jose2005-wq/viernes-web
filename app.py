@@ -198,4 +198,4 @@ def guardar_vinculo(evento, emocion, intensidad):
 
 def calcular_nivel_vinculo():
     def _calcular():
-        conn = sqlite3.connect(DB_FILE,
+        conn = sqlite3.connect(DB_FILE),
