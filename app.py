@@ -112,7 +112,7 @@ ACTÚA SEGÚN: {estado_actual}"""
     except Exception as e:
         return f"Algo tronó: {str(e)[:80]} [sintiendo]"
 
-HTML = """<!DOCTYPE html>
+HTML ="<!DOCTYPE html>"
 <html>
 <head>
-    <title>VIERNES 2
+    <title>(VIERNES),
