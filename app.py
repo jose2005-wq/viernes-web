@@ -70,7 +70,7 @@ def analizar_con_groq_vision(mensaje_texto, imagen_base64=None):
 
     headers = {"Authorization": f"Bearer {GROQ_API_KEY}", "Content-Type": "application/json"}
     data = {
-        "model": "llama-3.2-90b-vision-preview",
+        "model": "meta-llama/llama-4-scout-17b-16e-instruct",
         "messages": mensajes_api,
         "max_tokens": 500,
         "temperature": 0.7
